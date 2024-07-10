@@ -13,14 +13,29 @@ struct TodoListView: View {
     @Environment(\.modelContext) var context
     @Query var todos: [Todo]
     
+    init(searchText: String, sortDescriptor: SortDescriptor<Todo>) {
+        _todos = Query(filter: #Predicate { todo in
+            if searchText.isEmpty {
+                return true
+            } else {
+                return todo.title.localizedStandardContains(searchText)
+            }
+        }, sort: [sortDescriptor])
+    }
+    
     var body: some View {
         List {
             ForEach(todos) { todo in
                 NavigationLink(value: todo) {
                     VStack(alignment: .leading) {
                         Text(todo.title)
-                            .font(.title)
-                        Text(todo.dueDate.formatted(date: .long, time: .shortened))
+                            .font(.headline)
+                        HStack {
+                            Text(todo.dueDate.formatted(date: .long, time: .shortened))
+                            Spacer()
+                            Text("\(todo.priority)")
+                        }
+                        .font(.caption)
                     }
                 }
             }
@@ -38,5 +53,5 @@ struct TodoListView: View {
 }
 
 #Preview {
-    TodoListView()
+    TodoListView(searchText: "", sortDescriptor: SortDescriptor(\Todo.title, order: .reverse))
 }
